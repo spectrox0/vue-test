@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "esnext",
+    "useDefineForClassFields": true,
+    "allowSyntheticDefaultImports": true,
+    "composite": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "strict": true,
+    "jsx": "preserve",
+    "sourceMap": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "lib": ["esnext", "dom"],
+    "types": ["node", "vuetify"],
+    "paths": {
+      "@/*": ["src/*"],
+      "@/layouts/*": ["src/layouts/*"],
+      "@/components/*": ["src/components/*"],
+      "@/organisms/*": ["src/components/organisms/*"],
+      "@/molecules/*": ["src/components/molecules/*"],
+      "@/atoms/*": ["src/components/atoms/*"],
+      "@/views/*": ["src/views/*"],
+      "@/store/*": ["src/store/*"],
+      "@/models/*": ["src/models/*"],
+      "@/router/*": ["src/router/*"],
+      "@/config/*": ["src/config/*"],
+      "@/services/*": ["src/services/*"],
+      "@/composables/*": ["src/composables/*"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "vite.config.ts"
+  ]
+}
