@@ -1,6 +1,6 @@
 // Authentication Store with Pinia
 
-import { CurrentUser } from "@/models/user";
+import { CurrentUser } from "@/models/users";
 import { defineStore } from "pinia";
 import { authService } from "@/services";
 import { KEYS_TO_PERSIST } from "@/utils/constants";

@@ -1,10 +1,9 @@
-<!-- Table CRUD Users maked with vuetify 3 and vue 3-->
 <template>
   <div class="table-wrapper">
-    <input-search :search="searchField" label="Search Users" />
+    <input-search :search="searchField" label="Search Menu" />
     <v-data-table
       :headers="headers"
-      :items="users"
+      :items="menus"
       :loading="loading"
       class="elevation-1"
     >
@@ -12,18 +11,9 @@
       <template v-slot:item.actions="{ item }">
         <!-- Edit button icon  -->
         <div class="v-btn-group">
-          <!--  Btn view menu associated -->
-          <v-btn
-            color="primary"
-            flat
-            size="small"
-            icon
-            @click="openMenu(item.raw.id)"
-          >
-            <!-- Menu icon -->
+          <v-btn flat icon size="small" @click="openMenus">
             <v-icon small>mdi-menu</v-icon>
           </v-btn>
-
           <v-btn
             color="success"
             flat
@@ -66,16 +56,21 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-dialog v-model="dialogMenu" max-width="500px">
+    <!-- Modal to see all children menus  -->
+    <v-dialog v-model="dialogMenus" max-width="1280px">
       <v-card>
-        <v-card-title class="text-h5">Associate menu to user</v-card-title>
+        <v-card-title class="text-h5">Menus</v-card-title>
+        <v-card-content>
+          <v-row align="start"
+            ><v-col cols="4" v-for="itemMenu in menus" :key="itemMenu.id"
+              ><v-card class="mx-auto" min-height="300px">
+                <menu-vue :menu="itemMenu" /> </v-card></v-col
+          ></v-row>
+        </v-card-content>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue-darken-1" variant="text" @click="closeMenu"
-            >Cancel</v-btn
-          >
-          <v-btn color="blue-darken-1" variant="text" @click="associateMenu"
-            >OK</v-btn
+          <v-btn color="blue-darken-1" variant="text" @click="closeMenus"
+            >Close</v-btn
           >
           <v-spacer></v-spacer>
         </v-card-actions>
@@ -86,29 +81,25 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
-import { useFetchUsers } from "@/composables";
+import { User } from "@/models";
+import { useFetchMenus } from "@/composables";
 import { useToast } from "vue-toastification";
-import { userService } from "@/services/user";
+import { menuService } from "@/services";
 // get router
 import { useRouter } from "vue-router";
 import { computed } from "vue";
 import InputSearch from "@/components/atoms/InputSearch/InputSearch.vue";
-import { useUserStore } from "@/store";
-
+import MenuVue from "@/components/molecules/Menu/Menu.vue";
 const searchField = ref<string>("");
-
-const idUserMenu = ref<number>();
 // Router Hook
 const router = useRouter();
 // Toast Hook
 const toast = useToast();
-
-const { user } = useUserStore();
-
 //Get users
 
-const { data: users, doFetch, error: _, authToken, loading } = useFetchUsers();
+const { data: menus, doFetch, error: _, authToken, loading } = useFetchMenus();
 
+const idMenus = ref<number>();
 // get authToken from store with pinia
 const headers: {
   title: string;
@@ -116,19 +107,14 @@ const headers: {
   sortable: boolean;
   key: string;
 }[] = [
-  { title: "Username", align: "start", sortable: true, key: "username" },
+  { title: "Id", align: "start", sortable: true, key: "id" },
+  { title: "Parent", align: "start", sortable: true, key: "parent" },
   { title: "Name", align: "start", sortable: true, key: "name" },
-  { title: "Email", align: "start", sortable: true, key: "email" },
   { title: "Actions", align: "end", sortable: false, key: "actions" },
 ];
 
 const idDelete = ref<number>();
 const openDelete = (id: number) => {
-  if (!user) return;
-  if (id === user.id) {
-    toast.error("You can't delete yourself");
-    return;
-  }
   idDelete.value = id;
 };
 const closeDelete = () => {
@@ -139,22 +125,18 @@ const deleteConfirm = () => {
   deleteUser(idDelete.value);
 };
 
-const openMenu = (id: number) => {
-  idUserMenu.value = id;
+const openMenus = (id: number) => {
+  idMenus.value = id;
 };
-const closeMenu = () => {
-  idUserMenu.value = undefined;
-};
-
-const associateMenu = (idMenu: number) => {
-  if (idUserMenu.value === undefined) return;
-
-  closeMenu();
+const closeMenus = () => {
+  idMenus.value = undefined;
 };
 
 //Computed value from idDelete to open dialog delete user that depends directly from idDelete
 const dialogDelete = computed(() => idDelete.value !== undefined);
-const dialogMenu = computed(() => idUserMenu.value !== undefined);
+
+const dialogMenus = computed(() => idMenus.value !== undefined);
+
 // get all users from api when component mounted
 onMounted(async () => {
   try {
@@ -166,14 +148,14 @@ onMounted(async () => {
   }
 });
 
-const editUser = async (userId: number) => {
-  await router.push("/users/edit/" + userId);
+const editUser = async (userId: User) => {
+  await router.push("/menus/edit/" + userId.id);
 };
 const deleteUser = async (userId: number) => {
   try {
-    await userService.delete(userId.toString(), authToken);
-    users.value = users.value?.filter((u) => u.id !== userId);
-    toast.success("User deleted successfully");
+    await menuService.delete(userId.toString(), authToken);
+    menus.value = menus.value?.filter((u) => u.id !== userId);
+    toast.success("Menu deleted successfully");
   } catch (error) {
     if (error instanceof Error && error.message) {
       toast.error(error.message);

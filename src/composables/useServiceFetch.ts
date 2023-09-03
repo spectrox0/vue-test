@@ -28,6 +28,7 @@ export const useServiceFetch = <T extends {}>(
       error.value = undefined;
     } catch (err) {
       error.value = handleAPIError(err);
+      throw new Error(error.value);
     } finally {
       loading.value = false;
     }

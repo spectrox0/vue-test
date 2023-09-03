@@ -6,10 +6,10 @@ export interface User {
   username: string;
 }
 
-export interface CurrentUser extends User {
-  token: string;
-}
-
 export interface UserForm extends User {
   password: string;
+  confirmPassword: string;
+}
+export interface CurrentUser extends User {
+  token: string;
 }
