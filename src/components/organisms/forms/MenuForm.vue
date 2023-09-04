@@ -39,6 +39,7 @@ import { computed } from "vue";
 import { useToast } from "vue-toastification";
 import { useRouter } from "vue-router";
 import { onMounted } from "vue";
+import { flattenTree } from "@/utils/flattenTree";
 type KeysValues = keyof typeof initialValue;
 const { menuToEdit: { id: menuIdToEdit, ...menuToEdit } = {} as Menu } =
   defineProps({
@@ -62,7 +63,7 @@ const { doFetch, loading } = useServiceFetch(
 const { doFetch: doFetchMenus, data: menus } = useFetchMenus();
 
 const menusFiltered = computed(() =>
-  menus.value?.filter((item) => item.id !== menuIdToEdit)
+  flattenTree(menus.value || [])?.filter((item) => item.id !== menuIdToEdit)
 );
 const validateIfChangeExist = computed(() => {
   return isEqualObject(menu, initialValue);
