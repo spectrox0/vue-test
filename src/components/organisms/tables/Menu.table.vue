@@ -1,9 +1,9 @@
 <template>
   <div class="table-wrapper">
-    <input-search :search="searchField" label="Search Menu" />
+    <input-search label="Search Menu" @onsubmit="searchMenu" />
     <v-data-table
       :headers="headers"
-      :items="menus"
+      :items="flattenMenus"
       :loading="loading"
       class="elevation-1"
     >
@@ -11,7 +11,7 @@
       <template v-slot:item.actions="{ item }">
         <!-- Edit button icon  -->
         <div class="v-btn-group">
-          <v-btn flat icon size="small" @click="openMenus">
+          <v-btn flat icon size="small" @click="openMenus(item.raw.id)">
             <v-icon small>mdi-menu</v-icon>
           </v-btn>
           <v-btn
@@ -57,22 +57,21 @@
       </v-card>
     </v-dialog>
     <!-- Modal to see all children menus  -->
-    <v-dialog v-model="dialogMenus" max-width="1280px">
+    <v-dialog v-model="dialogMenus" max-width="480px">
       <v-card>
         <v-card-title class="text-h5">Menus</v-card-title>
-        <v-card-content>
-          <v-row align="start"
-            ><v-col cols="4" v-for="itemMenu in menus" :key="itemMenu.id"
-              ><v-card class="mx-auto" min-height="300px">
-                <menu-vue :menu="itemMenu" /> </v-card></v-col
-          ></v-row>
-        </v-card-content>
+        <div class="pa-4">
+          <grid-menu :menus="currentMenu" v-if="currentMenu" />
+        </div>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue-darken-1" variant="text" @click="closeMenus"
+          <v-btn
+            color="blue-darken-1"
+            class="align-self-end"
+            variant="text"
+            @click="closeMenus"
             >Close</v-btn
           >
-          <v-spacer></v-spacer>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -81,7 +80,6 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
-import { User } from "@/models";
 import { useFetchMenus } from "@/composables";
 import { useToast } from "vue-toastification";
 import { menuService } from "@/services";
@@ -89,9 +87,10 @@ import { menuService } from "@/services";
 import { useRouter } from "vue-router";
 import { computed } from "vue";
 import InputSearch from "@/components/atoms/InputSearch/InputSearch.vue";
-import MenuVue from "@/components/molecules/Menu/Menu.vue";
 import { ROUTES_NAMES } from "@/utils";
-const searchField = ref<string>("");
+import { flattenTree } from "@/utils/flattenTree";
+import GridMenu from "@/components/organisms/GridMenu/GridMenu.vue";
+import { Menu } from "@/models";
 // Router Hook
 const router = useRouter();
 // Toast Hook
@@ -99,8 +98,7 @@ const toast = useToast();
 //Get users
 
 const { data: menus, doFetch, authToken, loading } = useFetchMenus();
-
-const idMenus = ref<number>();
+const currentMenu = ref<[Menu]>();
 // get authToken from store with pinia
 const headers: {
   title: string;
@@ -108,9 +106,8 @@ const headers: {
   sortable: boolean;
   key: string;
 }[] = [
-  { title: "Id", align: "start", sortable: true, key: "id" },
-  { title: "Parent", align: "start", sortable: true, key: "parent" },
   { title: "Name", align: "start", sortable: true, key: "name" },
+  { title: "Parent", align: "start", sortable: true, key: "parent.name" },
   { title: "Actions", align: "end", sortable: false, key: "actions" },
 ];
 
@@ -126,28 +123,52 @@ const deleteConfirm = () => {
   deleteUser(idDelete.value);
 };
 
+const flattenMenus = computed(() => flattenTree(menus.value || []));
+
+const getMenuTree = (id: number, array: Menu[]): Menu | undefined => {
+  for (const menu of array) {
+    if (menu.id === id) {
+      return menu;
+    }
+    if (menu.children?.length) {
+      const found = getMenuTree(id, menu.children);
+      if (found) {
+        return found;
+      }
+    }
+  }
+};
 const openMenus = (id: number) => {
-  idMenus.value = id;
+  if (!menus.value) return;
+  const menuTree = getMenuTree(id, menus.value);
+  console.log(menuTree, id, menus.value);
+  if (menuTree) {
+    currentMenu.value = [menuTree];
+  }
 };
 const closeMenus = () => {
-  idMenus.value = undefined;
+  currentMenu.value = undefined;
 };
 
 //Computed value from idDelete to open dialog delete user that depends directly from idDelete
 const dialogDelete = computed(() => idDelete.value !== undefined);
 
-const dialogMenus = computed(() => idMenus.value !== undefined);
+const dialogMenus = computed(() => currentMenu.value !== undefined);
 
 // get all users from api when component mounted
 onMounted(async () => {
   try {
-    await doFetch();
+    await doFetch(undefined);
   } catch (error) {
     if (error instanceof Error && error.message) {
       toast.error(error.message);
     }
   }
 });
+
+const searchMenu = async (searchField: string) => {
+  await doFetch(searchField.trim() ? searchField : undefined);
+};
 
 const editUser = async (id: number) => {
   await router.push({
@@ -164,6 +185,8 @@ const deleteUser = async (userId: number) => {
     if (error instanceof Error && error.message) {
       toast.error(error.message);
     }
+  } finally {
+    closeDelete();
   }
 };
 </script>

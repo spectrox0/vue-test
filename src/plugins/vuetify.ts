@@ -51,5 +51,18 @@ export default createVuetify({
       flat: true,
       variant: "outlined",
     },
+    VSelect: {
+      variant: "outlined",
+      dense: "compact",
+      flat: true,
+    },
+    VCard: {
+      // variant: "outlined",
+      flat: true,
+    },
+    vTable: {
+      variant: "outlined",
+      flat: true,
+    },
   },
 });

@@ -15,6 +15,7 @@ export class AuthService {
   constructor() {
     this.client = axios.create({
       baseURL: config.baseAPIURL + "/auth",
+      timeout: 5000,
     });
   }
 

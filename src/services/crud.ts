@@ -10,9 +10,9 @@ export abstract class CommonService<T, E> {
     });
   }
   // TODO: Add methods to interact with the menu API
-  getAll = async (authToken: string): Promise<T[]> => {
+  getAll = async (filter = "", authToken: string): Promise<T[]> => {
     const response = await this.client.get<{ data: T[]; message: string }>(
-      "/",
+      "/" + filter ? "?filter=" + filter : "",
       getAuthHeaders(authToken)
     );
     return response.data.data;

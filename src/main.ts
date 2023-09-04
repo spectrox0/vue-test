@@ -27,6 +27,8 @@ const toastOptions: PluginOptions = {
   icon: false,
   position: "top-right",
   timeout: 5000,
+  mode: "dark",
+
   closeOnClick: true,
   pauseOnFocusLoss: true,
   pauseOnHover: true,

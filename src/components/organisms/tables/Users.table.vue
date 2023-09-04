@@ -1,7 +1,7 @@
 <!-- Table CRUD Users maked with vuetify 3 and vue 3-->
 <template>
   <div class="table-wrapper">
-    <input-search :search="searchField" label="Search Users" />
+    <input-search @onsubmit="searchUser" label="Search Users" />
     <v-data-table
       :headers="headers"
       :items="users"
@@ -69,15 +69,18 @@
     <v-dialog v-model="dialogMenu" max-width="500px">
       <v-card>
         <v-card-title class="text-h5">Associate menu to user</v-card-title>
+        <div class="pa-4">
+          <associated-menu-form
+            v-if="idUserMenu"
+            :user-id="idUserMenu"
+            @associate="associateMenu"
+          />
+        </div>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="blue-darken-1" variant="text" @click="closeMenu"
             >Cancel</v-btn
           >
-          <v-btn color="blue-darken-1" variant="text" @click="associateMenu"
-            >OK</v-btn
-          >
-          <v-spacer></v-spacer>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -95,8 +98,7 @@ import { computed } from "vue";
 import InputSearch from "@/components/atoms/InputSearch/InputSearch.vue";
 import { useUserStore } from "@/store";
 import { ROUTES_NAMES } from "@/utils";
-
-const searchField = ref<string>("");
+import AssociatedMenuForm from "@/components/organisms/forms/AssociateMenuForm.vue";
 
 const idUserMenu = ref<number>();
 // Router Hook
@@ -123,6 +125,9 @@ const headers: {
   { title: "Actions", align: "end", sortable: false, key: "actions" },
 ];
 
+const searchUser = async (searchField = "") => {
+  await doFetch(searchField?.trim() ? searchField : undefined);
+};
 const idDelete = ref<number>();
 const openDelete = (id: number) => {
   if (!user) return;
@@ -148,9 +153,7 @@ const closeMenu = () => {
   idUserMenu.value = undefined;
 };
 
-const associateMenu = (idMenu: number) => {
-  if (idUserMenu.value === undefined) return;
-
+const associateMenu = () => {
   closeMenu();
 };
 
@@ -160,7 +163,7 @@ const dialogMenu = computed(() => idUserMenu.value !== undefined);
 // get all users from api when component mounted
 onMounted(async () => {
   try {
-    await doFetch();
+    await doFetch(undefined);
   } catch (error) {
     if (error instanceof Error && error.message) {
       toast.error(error.message);
@@ -183,6 +186,8 @@ const deleteUser = async (userId: number) => {
     if (error instanceof Error && error.message) {
       toast.error(error.message);
     }
+  } finally {
+    closeDelete();
   }
 };
 </script>

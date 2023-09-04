@@ -1,6 +1,6 @@
 // Composables
-import { ROUTES_NAMES } from "@/utils";
-import { authGuard } from "@/utils/authGuard";
+import { KEYS_TO_PERSIST, ROUTES_NAMES } from "@/utils";
+import { authGuard, noAuthGuard } from "@/utils/authGuard";
 import { createRouter, createWebHistory } from "vue-router";
 
 const routes = [
@@ -53,6 +53,7 @@ const routes = [
   {
     name: ROUTES_NAMES.LOGIN,
     path: "/login",
+    meta: { requiresNoAuth: true },
     component: () => import("@/views/Login.vue"),
   },
 ];
@@ -65,8 +66,11 @@ const router = createRouter({
 // Auth guard
 router.beforeResolve(async (to, from, next) => {
   // If this isn't an initial page load and the user is not authenticated,
+
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     await authGuard(to, from, next);
+  } else if (to.matched.some((record) => record.meta.requiresNoAuth)) {
+    await noAuthGuard(to, from, next);
   } else {
     next();
   }

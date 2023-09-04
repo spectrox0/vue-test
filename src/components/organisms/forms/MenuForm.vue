@@ -6,6 +6,14 @@
       :disabled="loading"
       :rules="[rules.required, rules.name]"
     ></v-text-field>
+    <v-select
+      v-model="menu.parentId"
+      :items="menusFiltered"
+      item-title="name"
+      item-value="id"
+      label="Select Parent"
+      persistent-hint
+    ></v-select>
     <v-btn
       @click="submitForm"
       :disabled="!valid || !validateIfChangeExist"
@@ -26,27 +34,35 @@ import {
   commonValidation as rules,
 } from "@/utils";
 import { menuService } from "@/services";
-import { useServiceFetch } from "@/composables";
+import { useFetchMenus, useServiceFetch } from "@/composables";
 import { computed } from "vue";
 import { useToast } from "vue-toastification";
 import { useRouter } from "vue-router";
+import { onMounted } from "vue";
 type KeysValues = keyof typeof initialValue;
-const { menuToEdit: { id: menuIdToEdit, ...menuToEdit } = {} } = defineProps({
-  menuToEdit: {
-    type: Object as () => Menu,
-    required: false,
-  },
-});
+const { menuToEdit: { id: menuIdToEdit, ...menuToEdit } = {} as Menu } =
+  defineProps({
+    menuToEdit: {
+      type: Object as () => Menu,
+      required: false,
+    },
+  });
 
 const valid = ref(false);
-const initialValue: MenuForm = {
-  name: "",
-  ...menuToEdit,
-};
+const initialValue: MenuForm = Object.freeze({
+  name: menuToEdit?.name || "",
+  parentId: null,
+});
 const menu: MenuForm = ref({ ...initialValue }).value;
 
 const { doFetch, loading } = useServiceFetch(
   menuService[menuIdToEdit !== undefined ? "update" : "create"]
+);
+
+const { doFetch: doFetchMenus, data: menus } = useFetchMenus();
+
+const menusFiltered = computed(() =>
+  menus.value?.filter((item) => item.id !== menuIdToEdit)
 );
 const validateIfChangeExist = computed(() => {
   return isEqualObject(menu, initialValue);
@@ -61,7 +77,8 @@ const resetForm = () => {
   //Generate a new object with the same keys as initialValue
   const initial = { ...initialValue };
   valid.value = false;
-  Object.keys(menu).forEach(
+  Object.keys(initialValue).forEach(
+    //@ts-ignore
     (key) => (menu[key as KeysValues] = initial[key as KeysValues])
   );
 };
@@ -88,4 +105,8 @@ const submitForm = async () => {
     // Reset form
   }
 };
+
+onMounted(() => {
+  doFetchMenus(undefined);
+});
 </script>

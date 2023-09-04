@@ -5,3 +5,4 @@ export * from "./handleApiError";
 export * from "./validation";
 export * from "./getUpdatePayload";
 export * from "./isEqualObject";
+export * from "./isParent";

@@ -5,35 +5,40 @@
       ><v-container class="login">
         <v-card class="login__container">
           <v-card-title class="login__title">Login</v-card-title>
-          <form
+          <v-form
             class="d-flex flex-column login__form"
+            v-model="valid"
             @submit.prevent="handleLogin"
           >
             <v-text-field
-              density="compact"
-              variant="outlined"
               :disabled="loading"
               type="text"
               placeholder="Username"
-              v-model="username"
+              :rules="[rules.required]"
+              v-model="user.username"
             />
+
             <v-text-field
-              variant="outlined"
-              density="compact"
-              :disabled="loading"
-              type="password"
+              v-model="user.password"
               placeholder="Password"
-              v-model="password"
-            />
+              label="Password"
+              :type="showPassword ? 'text' : 'password'"
+              :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+              @click:append-inner="showPassword = !showPassword"
+              :disabled="loading"
+              :rules="[rules.required]"
+            ></v-text-field>
             <v-btn
               density="default"
               color="primary"
               variant="outlined"
+              :disabled="!valid"
+              size="large"
               :loading="loading"
               type="submit"
               >Login</v-btn
             >
-          </form>
+          </v-form>
         </v-card>
       </v-container></v-main
     ></v-app
@@ -55,6 +60,7 @@
     }
     .login__form {
       display: flex;
+      gap: 1rem;
     }
     .login__register {
       margin-top: 10px;
@@ -71,55 +77,47 @@
 }
 </style>
 
-<script lang="ts">
-import { ref, defineComponent } from "vue";
+<script lang="ts" setup>
+import { ref } from "vue";
 import { useToast } from "vue-toastification";
 import { useUserStore } from "@/store";
-import { handleAPIError } from "@/utils";
+import { ROUTES_NAMES, handleAPIError } from "@/utils";
 import { useRouter } from "vue-router";
-export default defineComponent({
-  name: "Login",
-  //Login with username and password in vue 3
-  setup() {
-    const { login } = useUserStore();
-    const toast = useToast();
+import { commonValidation as rules } from "@/utils/validation";
+//Login with username and password in vue 3
+const { login } = useUserStore();
+const toast = useToast();
 
-    // username and password state with ref
-    const username = ref<string>("");
-    const password = ref<string>("");
-    const loading = ref<boolean>(false);
+// username and password state with ref
+const loading = ref<boolean>(false);
+const showPassword = ref(false);
+const valid = ref(false);
 
-    const router = useRouter();
-    const handleLogin = async () => {
-      try {
-        //Set loading to true
-        loading.value = true;
-        //Validate username and password
-        if (!username.value.trim() || !password.value.trim()) {
-          toast.error("Username and password are required, can not be empty");
-          return;
-        }
+const initialValue = {
+  username: "",
+  password: "",
+};
+const user = ref({ ...initialValue }).value;
 
-        await login({
-          username: username.value,
-          password: password.value,
-        });
-        toast.success("Login successfully");
-        router.replace("/");
-      } catch (error) {
-        handleAPIError(error);
-      } finally {
-        //Set loading to false
-        loading.value = false;
-      }
-    };
-    return {
-      login,
-      username,
-      password,
-      loading,
-      handleLogin,
-    };
-  },
-});
+const router = useRouter();
+const handleLogin = async () => {
+  try {
+    //Set loading to true
+    loading.value = true;
+    //Validate username and password
+    if (!user.username.trim() || !user.password.trim()) {
+      toast.error("Username and password are required, can not be empty");
+      return;
+    }
+
+    await login(user);
+    toast.success("Login successfully");
+    router.replace({ name: ROUTES_NAMES.HOME });
+  } catch (error) {
+    handleAPIError(error);
+  } finally {
+    //Set loading to false
+    loading.value = false;
+  }
+};
 </script>

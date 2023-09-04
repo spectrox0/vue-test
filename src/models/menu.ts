@@ -1,8 +1,8 @@
 export interface Menu {
   id: number;
-  parent: number | null;
+  parentId: number | null;
   name: string;
   children: Menu[];
 }
 
-export type MenuForm = { name: string };
+export type MenuForm = { name: string; parentId: number | null };

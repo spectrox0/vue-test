@@ -6,10 +6,10 @@
   <form class="search-input-wrapper" @submit.prevent>
     <v-text-field
       v-model="search"
-      variant="outlined"
       density="compact"
       :placeholder="label"
       append-inner-icon="mdi-magnify"
+      @click:append-inner="handleSubmit"
       :label="label"
       single-line
       hide-details
@@ -21,28 +21,27 @@
 
 <script lang="ts" setup>
 // import ref from vue to use the search prop
-import { ref, watch } from "vue";
+import { watch } from "vue";
+import { ref } from "vue";
+const search = ref<string>("");
 // Receive the search prop
-const props = defineProps({
-  search: {
-    type: String,
-    required: true,
-  },
+const emit = defineEmits(["onsubmit"]);
+const handleSubmit = () => {
+  emit("onsubmit", search.value);
+};
+const { label } = defineProps({
   label: {
     type: String,
     required: false,
     default: "Search",
   },
 });
+
+watch(search, () => {
+  handleSubmit();
+});
+
 // Create a search variable to use in the input text
-const search = ref<string>(props.search);
-// Watch the search prop to update the search variable
-watch(
-  () => props.search,
-  (value) => {
-    search.value = value;
-  }
-);
 </script>
 
 <style scoped>

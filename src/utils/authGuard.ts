@@ -13,3 +13,17 @@ export const authGuard: NavigationGuard = async (_to, _from, next) => {
   await userStore.fetchUser(authToken).catch(handleAPIError);
   return next(!userStore.user ? { name: ROUTES_NAMES.LOGIN } : {});
 };
+
+export const noAuthGuard: NavigationGuard = async (_, __, next) => {
+  const userStore = useUserStore();
+
+  // Fetch user data from the server or local storage
+  if (userStore.user) return next({ name: ROUTES_NAMES.HOME });
+  const authToken = localStorage.getItem(KEYS_TO_PERSIST.AUTH_TOKEN);
+  if (!authToken) return next();
+  await userStore.fetchUser(authToken).catch(() => {
+    next({ name: ROUTES_NAMES.LOGIN });
+    localStorage.clear();
+  });
+  return next(userStore.user ? { name: ROUTES_NAMES.HOME } : {});
+};
