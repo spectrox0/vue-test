@@ -20,16 +20,17 @@ export abstract class CommonService<T, E> {
 
   get = async (id: string, authToken: string): Promise<T> => {
     const response = await this.client.get(`/${id}`, getAuthHeaders(authToken));
-    return response.data;
+    return response.data.data;
   };
 
   create = async (payload: E, authToken: string): Promise<T> => {
+    console.log(payload, authToken);
     const response = await this.client.post(
       "/",
       payload,
       getAuthHeaders(authToken)
     );
-    return response.data;
+    return response.data.data;
   };
 
   delete = async (id: string, authToken?: string): Promise<T> => {
@@ -37,10 +38,13 @@ export abstract class CommonService<T, E> {
       `/${id}`,
       getAuthHeaders(authToken)
     );
-    return response.data;
+    return response.data.data;
   };
 
-  update = async (id: string, payload: E, authToken: string): Promise<T> => {
+  update = async (
+    { id, ...payload }: Partial<E> & { id: number },
+    authToken: string
+  ): Promise<T> => {
     const response = await this.client.put(
       `/${id}`,
       payload,

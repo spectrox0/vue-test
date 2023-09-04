@@ -94,6 +94,7 @@ import { useRouter } from "vue-router";
 import { computed } from "vue";
 import InputSearch from "@/components/atoms/InputSearch/InputSearch.vue";
 import { useUserStore } from "@/store";
+import { ROUTES_NAMES } from "@/utils";
 
 const searchField = ref<string>("");
 
@@ -107,7 +108,7 @@ const { user } = useUserStore();
 
 //Get users
 
-const { data: users, doFetch, error: _, authToken, loading } = useFetchUsers();
+const { data: users, doFetch, authToken, loading } = useFetchUsers();
 
 // get authToken from store with pinia
 const headers: {
@@ -137,6 +138,7 @@ const closeDelete = () => {
 const deleteConfirm = () => {
   if (idDelete.value === undefined) return;
   deleteUser(idDelete.value);
+  closeDelete();
 };
 
 const openMenu = (id: number) => {
@@ -166,8 +168,11 @@ onMounted(async () => {
   }
 });
 
-const editUser = async (userId: number) => {
-  await router.push("/users/edit/" + userId);
+const editUser = async (id: number) => {
+  await router.push({
+    name: ROUTES_NAMES.USERS_EDIT,
+    params: { id: id.toString() },
+  });
 };
 const deleteUser = async (userId: number) => {
   try {

@@ -1,4 +1,5 @@
 // Composables
+import { ROUTES_NAMES } from "@/utils";
 import { authGuard } from "@/utils/authGuard";
 import { createRouter, createWebHistory } from "vue-router";
 
@@ -10,7 +11,7 @@ const routes = [
     children: [
       {
         path: "",
-        name: "Home",
+        name: ROUTES_NAMES.HOME,
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
@@ -19,28 +20,38 @@ const routes = [
       },
       {
         path: "/users",
-        name: "Users",
+        name: ROUTES_NAMES.USERS,
         component: () => import("@/views/Users.vue"),
       },
       {
         path: "/users/edit/:id",
-        name: "User",
+        name: ROUTES_NAMES.USERS_EDIT,
         component: () => import("@/views/UsersEdit.vue"),
       },
       {
         path: "/users/create",
-        name: "UserCreate",
+        name: ROUTES_NAMES.USERS_CREATE,
         component: () => import("@/views/UsersCreate.vue"),
       },
       {
         path: "/menus",
-        name: "Menus",
+        name: ROUTES_NAMES.MENUS,
         component: () => import("@/views/Menus.vue"),
+      },
+      {
+        path: "/menus/edit/:id",
+        name: ROUTES_NAMES.MENUS_EDIT,
+        component: () => import("@/views/MenusEdit.vue"),
+      },
+      {
+        path: "/menus/create",
+        name: ROUTES_NAMES.MENUS_CREATE,
+        component: () => import("@/views/MenusCreate.vue"),
       },
     ],
   },
   {
-    name: "Login",
+    name: ROUTES_NAMES.LOGIN,
     path: "/login",
     component: () => import("@/views/Login.vue"),
   },

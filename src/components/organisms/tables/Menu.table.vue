@@ -90,6 +90,7 @@ import { useRouter } from "vue-router";
 import { computed } from "vue";
 import InputSearch from "@/components/atoms/InputSearch/InputSearch.vue";
 import MenuVue from "@/components/molecules/Menu/Menu.vue";
+import { ROUTES_NAMES } from "@/utils";
 const searchField = ref<string>("");
 // Router Hook
 const router = useRouter();
@@ -97,7 +98,7 @@ const router = useRouter();
 const toast = useToast();
 //Get users
 
-const { data: menus, doFetch, error: _, authToken, loading } = useFetchMenus();
+const { data: menus, doFetch, authToken, loading } = useFetchMenus();
 
 const idMenus = ref<number>();
 // get authToken from store with pinia
@@ -148,8 +149,11 @@ onMounted(async () => {
   }
 });
 
-const editUser = async (userId: User) => {
-  await router.push("/menus/edit/" + userId.id);
+const editUser = async (id: number) => {
+  await router.push({
+    name: ROUTES_NAMES.MENUS_EDIT,
+    params: { id: id.toString() },
+  });
 };
 const deleteUser = async (userId: number) => {
   try {

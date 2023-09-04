@@ -42,4 +42,14 @@ export default createVuetify({
       },
     },
   },
+  defaults: {
+    VTextField: {
+      variant: "outlined",
+      dense: "compact",
+    },
+    VBtn: {
+      flat: true,
+      variant: "outlined",
+    },
+  },
 });

@@ -6,7 +6,7 @@ export interface User {
   username: string;
 }
 
-export interface UserForm extends User {
+export interface UserForm extends Omit<User, "id"> {
   password: string;
   confirmPassword: string;
 }
